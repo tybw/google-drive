@@ -1,0 +1,16 @@
+#index:
+#    path: /
+#    controller: App\Controller\DefaultController::index
+home:
+  path: /
+  controller: App\Controller\DefaultController::index
+
+user:
+  path: /users
+  controller: App\Controller\UsersController::index
+  methods: GET
+
+new_user:
+  path: /users/add
+  controller: App\Controller\UsersController::addNew
+  methods: [GET, POST]

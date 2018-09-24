@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+{% block title %}User{% endblock %}
+{% block stylesheets %}{% endblock %}
+{% block body %}
+    <h1>Users</h1>
+    <span>{{ accounts|length }}</span>
+    {% for account in accounts %}
+        {{ account.id }}: {{ account.username }} {{ account.email }}<br>
+    {% endfor %}
+    <a href="{{ path('new_user') }}">Add new user</a>
+{% endblock %}
+{% block javascripts %}{% endblock %}
