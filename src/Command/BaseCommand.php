@@ -23,6 +23,9 @@ abstract class BaseCommand extends ContainerAwareCommand
     /** @var string $command */
     protected $command;
 
+    /** @var string $username */
+    protected $username;
+
     /** @var string $keyFile */
     protected $keyFile;
 
@@ -51,9 +54,11 @@ abstract class BaseCommand extends ContainerAwareCommand
      */
     protected function handleInputs(InputInterface $input)
     {
+        $this->username = $input->hasArgument('username') ?
+            $input->getArgument('username') : null;
+
         $this->tokenFile = self::KEY_PATH .
-                           ($input->hasArgument('username') ?
-                               $input->getArgument('username') . '-' : '') .
+                           ($this->username ? $this->username . '-' : '') .
                            self::ACCESS_TOKEN_FILE;
 
         if (file_exists($this->tokenFile)) {
@@ -126,7 +131,7 @@ abstract class BaseCommand extends ContainerAwareCommand
         $g->setAuthConfig($keyFile);
 
         if ($this->accessToken && array_key_exists('access_token', $this->accessToken)) {
-            $g->setAccessToken($this->accessToken['access_token']);
+            $g->setAccessToken($this->accessToken);
         }
 
         return $g;

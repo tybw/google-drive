@@ -14,3 +14,8 @@ new_user:
   path: /users/add
   controller: App\Controller\UsersController::addNew
   methods: [GET, POST]
+
+notification_web_hook:
+  path: /notification
+  controller: App\Controller\ChangeHookController::index
+  methods: [POST]

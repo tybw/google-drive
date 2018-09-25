@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use AppBundle\Exception\ResourceNotFoundException;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,6 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class WatchChangesCommand extends BaseCommand
 {
+    private const CHANNEL_TYPE = 'web_hook';
+
     protected function configure()
     {
         $this->command = 'app:google:drive:changes:watch';
@@ -33,36 +36,29 @@ class WatchChangesCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->init($input);
+        $resourceId = $input->getArgument('resource-id');
+
         if (!$this->changeToken) {
             $response = $this->gDrive->changes->getStartPageToken();
             $this->changeToken = $response->getStartPageToken();
             file_put_contents($this->changeFile, $this->changeToken);
         }
-        $initToken = $this->changeToken;
-        $nextPageToken = null;
 
-        $allChanges = [];
-        $pageToken = $initToken;
-        try {
-            while ($pageToken !== null) {
-                $response = $this->gDrive->changes->listChanges($pageToken);
-                $pageToken = $response->getNextPageToken();
-                if ($pageToken === null) {
-                    $nextPageToken = $response->getNewStartPageToken();
-                    file_put_contents($this->changeFile, $nextPageToken);
-                }
-                $changes = $response->getChanges();
-                foreach ($changes as $change) {
-                    $allChanges[] = $change;
-                }
-            }
-        } catch (\Google_Service_Exception $e) {
-            $output->writeln('Error in fetching changes - ' . json_encode($e));
-        }
+        $channelId = Uuid::uuid4();
+        $channel = new \Google_Service_Drive_Channel();
+        $channel->setId($channelId);
+        $channel->setType(self::CHANNEL_TYPE);
+        $channel->setResourceId($resourceId);
+        $channel->setResourceUri('https://www.googleapis.com/drive/v3/files/' . $resourceId);
+        $channel->setToken($this->username);
+        $channel->setExpiration((new \DateTimeImmutable('+1 hrs'))->getTimestamp() * 1000);
+        $channel->setAddress(getenv('WATCH_WEB_HOOK'));
 
-        $output->writeln(json_encode($allChanges));
-        $output->writeln($initToken);
-        $output->writeln($nextPageToken);
+        $this->gDrive->changes->watch($this->changeToken, $channel);
+
+        $output->writeln('Channel ID: ' . $channelId);
+        $output->writeln('Change token: ' . $this->changeToken);
+        $output->writeln(json_encode($channel));
 
         return $this;
     }
