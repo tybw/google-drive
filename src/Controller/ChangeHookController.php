@@ -49,7 +49,7 @@ class ChangeHookController extends Controller
             $changes = new Changes();
             $changes->setChannelId($content['x-goog-channel-id'][0]);
             $changes->setToken($content['x-goog-channel-token'][0]);
-            $changes->setMessageNumber($content['x-goog-message-number'][0]);
+            $changes->setMessageNumber((int) $content['x-goog-message-number'][0]);
             $changes->setContent(json_encode($content));
             $this->em->persist($changes);
             $this->em->flush();
