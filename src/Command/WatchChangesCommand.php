@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use AppBundle\Exception\ResourceNotFoundException;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,6 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class WatchChangesCommand extends BaseCommand
 {
     private const CHANNEL_TYPE = 'web_hook';
+    private const RESOURCE_URI = 'https://www.googleapis.com/drive/v3/changes';
 
     protected function configure()
     {
@@ -45,11 +45,12 @@ class WatchChangesCommand extends BaseCommand
         }
 
         $channelId = Uuid::uuid4();
+
         $channel = new \Google_Service_Drive_Channel();
         $channel->setId($channelId);
         $channel->setType(self::CHANNEL_TYPE);
         $channel->setResourceId($resourceId);
-        $channel->setResourceUri('https://www.googleapis.com/drive/v3/changes');
+        $channel->setResourceUri(self::RESOURCE_URI);
         $channel->setToken($this->username);
         $channel->setExpiration((new \DateTimeImmutable('+1 hrs'))->getTimestamp() * 1000);
         $channel->setAddress(getenv('WATCH_WEB_HOOK'));
