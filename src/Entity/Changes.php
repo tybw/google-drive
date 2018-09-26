@@ -47,9 +47,16 @@ class Changes
     /**
      * @var int
      *
-     * @ORM\Column(name="pageToken", type="integer", nullable=true)
+     * @ORM\Column(name="page_token", type="integer", nullable=true)
      */
     private $pageToken;
+
+    /**
+     * @var \DateTimeImmutable
+     *
+     * @ORM\Column(name="expire_at", type="datetimetz_immutable", nullable=false)
+     */
+    private $expireAt;
 
     /**
      * @var string
@@ -96,6 +103,11 @@ class Changes
         return $this->pageToken;
     }
 
+    public function getExpireAt(): \DateTimeImmutable
+    {
+        return $this->expireAt;
+    }
+
     public function getContent()
     {
         return $this->content;
@@ -134,6 +146,12 @@ class Changes
         return $this;
     }
 
+    public function setExpireAt(\DateTimeImmutable $expireAt): self
+    {
+        $this->expireAt = $expireAt;
+
+        return $this;
+    }
 
     public function setContent(string $content): self
     {

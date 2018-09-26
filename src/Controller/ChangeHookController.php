@@ -17,15 +17,23 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ChangeHookController extends Controller
 {
+    private const HDR_CHANNEL_ID = 'x-goog-channel-id';
+    private const HDR_CHANNEL_TOKEN = 'x-goog-channel-token';
+    private const HDR_CHANNEL_EXPIRATION = 'x-goog-channel-expiration';
+    private const HDR_CHANNEL_NUMBER = 'x-goog-channel-number';
+    private const HDR_MESSAGE_NUMBER = 'x-goog-message-number';
+    private const HDR_RESOURCE_ID = 'x-goog-resource-id';
+    private const HDR_RESOURCE_URI = 'x-goog-resource-uri';
+    private const HDR_RESOURCE_STATE = 'x-goog-resource-state';
     private const REQUEST_MAP = [
-        'x-goog-channel-expiration' => 1,
-        'x-goog-channel-id'         => 1,
-        'x-goog-channel-token'      => 1,
-        'x-goog-channel-number'     => 1,
-        'x-goog-message-number'     => 1,
-        'x-goog-resource-id'        => 1,
-        'x-goog-resource-uri'       => 1,
-        'x-goog-resource-state'     => 1
+        self::HDR_CHANNEL_ID         => 1,
+        self::HDR_CHANNEL_TOKEN      => 1,
+        self::HDR_CHANNEL_EXPIRATION => 1,
+        self::HDR_CHANNEL_NUMBER     => 1,
+        self::HDR_MESSAGE_NUMBER     => 1,
+        self::HDR_RESOURCE_ID        => 1,
+        self::HDR_RESOURCE_URI       => 1,
+        self::HDR_RESOURCE_STATE     => 1
     ];
 
     /** @var EntityManagerInterface $em */
@@ -45,18 +53,30 @@ class ChangeHookController extends Controller
     public function index(Request $request)
     {
         $content = array_intersect_key($request->headers->all(), self::REQUEST_MAP);
+
         if ($content) {
-            $pageToken = $this->extractPageToken($content['x-goog-resource-uri'] ?? null);
+            $id = $content[self::HDR_CHANNEL_ID][0];
+            $token = $content[self::HDR_CHANNEL_TOKEN][0];
+            $messageNumber = (int) $content[self::HDR_MESSAGE_NUMBER][0];
 
-            $changes = (new Changes())
-                ->setChannelId($content['x-goog-channel-id'][0])
-                ->setToken($content['x-goog-channel-token'][0])
-                ->setMessageNumber((int) $content['x-goog-message-number'][0])
-                ->setPageToken($pageToken)
-                ->setContent(json_encode($content));
+            $changes = $this->changesRepository->findByChannelId($id);
 
-            $this->em->persist($changes);
-            $this->em->flush();
+            if (!$changes) {
+                $changes = (new Changes())
+                    ->setChannelId($id)
+                    ->setToken($token)
+                    ->setMessageNumber($messageNumber)
+                    ->setExpireAt(
+                        new \DateTimeImmutable($content[self::HDR_CHANNEL_EXPIRATION][0])
+                    )
+                    ->setPageToken(
+                        $this->extractPageToken($content[self::HDR_RESOURCE_URI] ?? null)
+                    )
+                    ->setContent(json_encode($content));
+
+                $this->em->persist($changes);
+                $this->em->flush();
+            }
         }
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
