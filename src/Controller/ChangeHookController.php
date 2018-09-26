@@ -47,8 +47,9 @@ class ChangeHookController extends Controller
         $content = array_intersect_key($request->headers->all(), self::REQUEST_MAP);
         if ($content) {
             $changes = new Changes();
-            $changes->setChannelId($content->id);
-            $changes->setToken($content->token);
+            $changes->setChannelId($content['x-goog-channel-id']);
+            $changes->setToken($content['x-goog-channel-token']);
+            $changes->setMessageNumber($content['x-goog-message-number']);
             $changes->setContent(json_encode($content));
             $this->em->persist($changes);
             $this->em->flush();
