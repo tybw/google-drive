@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Uuid;
 
 /**
  * Class Changes.
@@ -44,6 +43,13 @@ class Changes
      * @ORM\Column(name="message_number", type="integer", nullable=false)
      */
     private $messageNumber;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="pageToken", type="integer", nullable=true)
+     */
+    private $pageToken;
 
     /**
      * @var string
@@ -85,6 +91,11 @@ class Changes
         return $this->messageNumber;
     }
 
+    public function getPageToken(): ?int
+    {
+        return $this->pageToken;
+    }
+
     public function getContent()
     {
         return $this->content;
@@ -115,6 +126,14 @@ class Changes
 
         return $this;
     }
+
+    public function setPageToken(?int $pageToken): self
+    {
+        $this->pageToken = $pageToken;
+
+        return $this;
+    }
+
 
     public function setContent(string $content): self
     {
