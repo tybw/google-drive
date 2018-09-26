@@ -70,7 +70,7 @@ class ChangeHookController extends Controller
                         new \DateTimeImmutable($content[self::HDR_CHANNEL_EXPIRATION][0])
                     )
                     ->setPageToken(
-                        $this->extractPageToken($content[self::HDR_RESOURCE_URI] ?? null)
+                        $this->extractPageToken($content[self::HDR_RESOURCE_URI][0] ?? null)
                     )
                     ->setContent(json_encode($content));
 
@@ -85,12 +85,12 @@ class ChangeHookController extends Controller
     /**
      * @param null|string $uri
      *
-     * @return null
+     * @return int|null
      */
-    private function extractPageToken(?string $uri)
+    private function extractPageToken(?string $uri): ?int
     {
         parse_str(parse_url($uri ?? '', PHP_URL_QUERY), $queries);
 
-        return $queries['pageToken'] ?? null;
+        return $queries['pageToken'] ? (int) $queries['pageToken'] : null;
     }
 }
