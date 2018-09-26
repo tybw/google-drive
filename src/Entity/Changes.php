@@ -39,6 +39,13 @@ class Changes
     private $token;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(name="message_number", type="integer", nullable=false)
+     */
+    private $messageNumber;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="content", type="json", nullable=false, options={"jsonb": true})
@@ -73,6 +80,11 @@ class Changes
         return $this->token;
     }
 
+    public function getMessageNumber(): int
+    {
+        return $this->messageNumber;
+    }
+
     public function getContent()
     {
         return $this->content;
@@ -93,6 +105,13 @@ class Changes
     public function setToken(string $token): self
     {
         $this->token = $token;
+
+        return $this;
+    }
+
+    public function setMessageNumber(int $number): self
+    {
+        $this->messageNumber = $number;
 
         return $this;
     }

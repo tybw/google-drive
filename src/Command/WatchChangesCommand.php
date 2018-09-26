@@ -49,7 +49,7 @@ class WatchChangesCommand extends BaseCommand
         $channel->setId($channelId);
         $channel->setType(self::CHANNEL_TYPE);
         $channel->setResourceId($resourceId);
-        $channel->setResourceUri('https://www.googleapis.com/drive/v3/files/' . $resourceId);
+        $channel->setResourceUri('https://www.googleapis.com/drive/v3/changes');
         $channel->setToken($this->username);
         $channel->setExpiration((new \DateTimeImmutable('+1 hrs'))->getTimestamp() * 1000);
         $channel->setAddress(getenv('WATCH_WEB_HOOK'));
